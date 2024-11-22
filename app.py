@@ -53,8 +53,10 @@ if 'df' not in st.session_state:
     st.session_state.df = None
 if 'model' not in st.session_state:
     st.session_state.model = None
-if 'label_encoder' not in st.session_state:
-    st.session_state.label_encoder = LabelEncoder()
+if 'location_encoder' not in st.session_state:
+    st.session_state.location_encoder = LabelEncoder()
+if 'education_encoder' not in st.session_state:
+    st.session_state.education_encoder = LabelEncoder()
 
 # Generate Data button
 if st.button("Generate New Data"):
@@ -62,8 +64,13 @@ if st.button("Generate New Data"):
     
     # Prepare data for modeling
     df_model = st.session_state.df.copy()
-    df_model['location'] = st.session_state.label_encoder.fit_transform(df_model['location'])
-    df_model['education'] = st.session_state.label_encoder.fit_transform(df_model['education'])
+    
+    # Fit and transform the categorical variables
+    st.session_state.location_encoder.fit(df_model['location'])
+    st.session_state.education_encoder.fit(df_model['education'])
+    
+    df_model['location'] = st.session_state.location_encoder.transform(df_model['location'])
+    df_model['education'] = st.session_state.education_encoder.transform(df_model['education'])
     
     X = df_model.drop('default', axis=1)
     y = df_model['default']
@@ -133,8 +140,8 @@ if st.session_state.df is not None:
             'credit_score': [credit_score],
             'employment_years': [employment_years],
             'loan_amount': [loan_amount],
-            'location': [st.session_state.label_encoder.transform([location])[0]],
-            'education': [st.session_state.label_encoder.transform([education])[0]]
+            'location': [st.session_state.location_encoder.transform([location])[0]],
+            'education': [st.session_state.education_encoder.transform([education])[0]]
         })
         
         # Make prediction
